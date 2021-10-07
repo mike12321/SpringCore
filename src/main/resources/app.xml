@@ -1,13 +1,149 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans  xmlns="http://www.springframework.org/schema/beans"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:context="http://www.springframework.org/schema/context"
-        xsi:schemaLocation="http://www.springframework.org/schema/beans
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context.xsd">
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util.xsd">
 
-    <bean>
+    <context:property-placeholder location="classpath:app.properties"/>
 
+    <bean id="eventStorage" class="dao.storage.EventStorage">
+        <property name="path" value="${app.events-path}"/>
+        <property name="eventStorage">
+            <util:map id="map" map-class="java.util.HashMap" key-type="java.lang.Long" value-type="model.Event">
+                <entry key="1" value-ref="event1"/>
+                <entry key="2" value-ref="event2"/>
+                <entry key="3" value-ref="event3"/>
+            </util:map>
+
+        </property>
     </bean>
+
+    <bean id="dateFormat" class="java.text.SimpleDateFormat">
+        <constructor-arg value="yyyy-MM-dd" />
+    </bean>
+
+    <bean id="event1" class="model.impl.EventImpl">
+        <constructor-arg index="0" value="1"/>
+        <constructor-arg index="1" value="Event1"/>
+        <constructor-arg index="2" ref="event1Date"/>
+    </bean>
+
+    <bean id="event2" class="model.impl.EventImpl">
+        <constructor-arg index="0" value="2"/>
+        <constructor-arg index="1" value="Event2"/>
+        <constructor-arg index="2" ref="event2Date"/>
+    </bean>
+
+    <bean id="event3" class="model.impl.EventImpl">
+        <constructor-arg index="0" value="3"/>
+        <constructor-arg index="1" value="Event3"/>
+        <constructor-arg index="2" ref="event3Date"/>
+    </bean>
+
+    <bean id="event1Date" factory-bean="dateFormat" factory-method="parse">
+        <constructor-arg value="2021-11-20" />
+    </bean>
+    <bean id="event2Date" factory-bean="dateFormat" factory-method="parse">
+        <constructor-arg value="2021-10-20" />
+    </bean>
+    <bean id="event3Date" factory-bean="dateFormat" factory-method="parse">
+        <constructor-arg value="2021-12-13" />
+    </bean>
+
+    <bean id="ticketStorage" class="dao.storage.TicketStorage">
+        <property name="path" value="${app.tickets-path}"/>
+        <property name="ticketStorage">
+            <util:map id="map" map-class="java.util.TreeMap" key-type="java.lang.Long" value-type="model.Ticket">
+                <entry key="1" value-ref="ticket1"/>
+                <entry key="2" value-ref="ticket2"/>
+                <entry key="3" value-ref="ticket3"/>
+            </util:map>
+
+        </property>
+    </bean>
+
+    <bean id="ticket1" class="model.impl.TicketImpl">
+        <constructor-arg index="0" value="1"/>
+        <constructor-arg index="1" value="1"/>
+        <constructor-arg index="2" value="1"/>
+        <constructor-arg index="3" value="STANDARD"/>
+        <constructor-arg index="4" value="123"/>
+    </bean>
+
+    <bean id="ticket2" class="model.impl.TicketImpl">
+        <constructor-arg index="0" value="2"/>
+        <constructor-arg index="1" value="2"/>
+        <constructor-arg index="2" value="2"/>
+        <constructor-arg index="3" value="PREMIUM"/>
+        <constructor-arg index="4" value="456"/>
+    </bean>
+
+    <bean id="ticket3" class="model.impl.TicketImpl">
+        <constructor-arg index="0" value="3"/>
+        <constructor-arg index="1" value="2"/>
+        <constructor-arg index="2" value="2"/>
+        <constructor-arg index="3" value="BAR"/>
+        <constructor-arg index="4" value="234"/>
+    </bean>
+
+    <bean id="userStorage" class="dao.storage.UserStorage">
+        <property name="path" value="${app.users-path}"/>
+        <property name="userStorage">
+            <util:map id="map" map-class="java.util.HashMap" key-type="java.lang.Long" value-type="model.User">
+                <entry key="1" value-ref="user1"/>
+                <entry key="2" value-ref="user2"/>
+            </util:map>
+
+        </property>
+    </bean>
+
+    <bean id="user1" class="model.impl.UserImpl">
+        <constructor-arg index="0" value="1"/>
+        <constructor-arg index="1" value="John"/>
+        <constructor-arg index="2" value="john@email.com"/>
+    </bean>
+
+    <bean id="user2" class="model.impl.UserImpl">
+        <constructor-arg index="0" value="2"/>
+        <constructor-arg index="1" value="Jessica"/>
+        <constructor-arg index="2" value="jessica@email.com"/>
+    </bean>
+
+    <bean id="facade" name="bookingFacade" class="facade.impl.BookingFacadeImpl">
+        <constructor-arg index="0" ref="eventService"/>
+        <constructor-arg index="1" ref="userService"/>
+        <constructor-arg index="2" ref="ticketService"/>
+    </bean>
+
+    <bean name="eventService" class="service.impl.EventServiceImpl">
+        <property name="eventDAO" ref="eventDAO"/>
+    </bean>
+
+    <bean name="ticketService" class="service.impl.TicketServiceImpl">
+        <property name="ticketDAO" ref="ticketDAO" />
+    </bean>
+
+    <bean name="userService" class="service.impl.UserServiceImpl">
+        <property name="userDAO" ref="userDAO" />
+    </bean>
+
+    <bean name="eventDAO" class="dao.impl.EventDAOImpl">
+        <constructor-arg index="0" ref="eventStorage"/>
+    </bean>
+
+    <bean name="userDAO" class="dao.impl.UserDAOImpl">
+        <constructor-arg index="0" ref="userStorage"/>
+    </bean>
+
+    <bean name="ticketDAO" class="dao.impl.TicketDAOImpl">
+        <constructor-arg index="0" ref="ticketStorage"/>
+    </bean>
+
+    <bean id="postProcessor" class="dao.storage.utils.StoragePostProcessor"/>
 </beans>
